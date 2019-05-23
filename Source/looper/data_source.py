@@ -1,7 +1,8 @@
 import os
+import numpy as np
 import pandas as pd
 from tools import sets_match
-from typing import List, Optional
+from typing import List, Optional, Union
 
 
 class DataSource:
@@ -16,6 +17,22 @@ class DataSource:
         assert sets_match(names, dataframe.index), "Non-matching names in {}.get".format(self.__class__.__name__)
         assert sets_match(labels, dataframe.columns), "Non-matching labels in {}.get".format(self.__class__.__name__)
         return dataframe
+
+    def set_value(self, names: Union[str, List[str]], labels: Union[str, List[str]], value):
+        if isinstance(names, str): return self.set_value([names], labels, value)
+        if isinstance(labels, str): return self.set_value(names, [labels], value)
+        self.set(pd.DataFrame(value, index = names, columns = labels))
+
+
+class LabelDataSource(DataSource):
+    def set_true(self, names: Union[str, List[str]], labels: Union[str, List[str]]):
+        return self.set_value(names, labels, 1)
+
+    def set_false(self, names: Union[str, List[str]], labels: Union[str, List[str]]):
+        return self.set_value(names, labels, 0)
+
+    def clear(self, names: Union[str, List[str]], labels: Union[str, List[str]]):
+        return self.set_value(names, labels, np.nan)
 
 
 class CachedDataSource(DataSource):
@@ -74,3 +91,8 @@ class FileDataSource(CachedDataSource):
         new_dataframe = new_dataframe.astype(self.dtype)
         new_dataframe.to_pickle(self.path)
         return new_dataframe
+
+
+class FileLabelDataSource(FileDataSource, LabelDataSource):
+    def __init__(self, path: str):
+        super().__init__(path, dtype = "Int64")
