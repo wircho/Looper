@@ -1,3 +1,5 @@
+import os
+import warnings
 import numpy as np
 import pandas as pd
 from typing import Iterable, Optional, List
@@ -44,6 +46,15 @@ def series_or(s0: pd.Series, s1: pd.Series):
     if len(s1.index) > 0: s[s1.index] = s[s1.index] | s1
     return s
 
+
+def image_names_in(path: str):
+    names = [name for name in os.listdir(path) if os.path.splitext(name.lower()) in [".jpg", ".jpeg", ".png"]]
+    warned = False
+    for name in names:
+        if warned or name.lower() == name: continue
+        warned = True
+        warnings.warn("Some images like {} have mixed case names. Please consider making them all lowercase to prevent incompatibility issues with different OSs.".format(name))
+    return names
 
 pd.DataFrame.sub_set = sub_set
 pd.DataFrame.sub_get = sub_get
