@@ -24,6 +24,12 @@ def sub_get(self: pd.DataFrame, cols: Optional[List[str]], index: Optional[List[
     return self.loc[list(index), list(cols)]
 
 
+def where_series(self: pd.DataFrame, series: pd.Series) -> pd.DataFrame:
+    index = set(self.index).intersection(series.index)
+    series = series[index]
+    return self.loc[index][series]
+
+
 def series_and(s0: pd.Series, s1: pd.Series):
     index = set(s0.index).intersection(s1.index)
     if len(index) == 0: return pd.Series()
