@@ -40,6 +40,9 @@ class LabelDataSource(DataSource):
     def is_not_label(self, label: str):
         return self.get()[label] == 0
 
+    def is_set_label(self, label: str):
+        return self.get()[label] != np.nan
+
     def is_not_set_label(self, label: str):
         return self.get()[label] == np.nan
 
