@@ -34,6 +34,15 @@ class LabelDataSource(DataSource):
     def clear(self, names: Union[str, List[str]], labels: Union[str, List[str]]):
         return self.set_value(names, labels, np.nan)
 
+    def is_label(self, label: str):
+        return self.get()[label] == 1
+
+    def is_not_label(self, label: str):
+        return self.get()[label] == 0
+
+    def is_not_set_label(self, label: str):
+        return self.get()[label] == np.nan
+
 
 class CachedDataSource(DataSource):
     def __init__(self, dtype):
@@ -58,11 +67,11 @@ class CachedDataSource(DataSource):
 
     def refresh(self, names: Optional[List[str]] = None, labels: Optional[List[str]] = None):
         dataframe = self.pull(names = names, labels = labels)
-        self.dataframe.df_set(dataframe)
+        self.dataframe.sub_set(dataframe)
         self.dataframe = self.dataframe.astype(self.dtype)
 
     def unsafe_get(self, names: Optional[List[str]] = None, labels: Optional[List[str]] = None) -> pd.DataFrame:
-        return self.dataframe.df_get(labels, names)
+        return self.dataframe.sub_get(labels, names)
 
     def set(self, dataframe: pd.DataFrame):
         dataframe = dataframe.astype(self.dtype)
@@ -83,11 +92,11 @@ class FileDataSource(CachedDataSource):
 
     def unsafe_pull(self, names: Optional[List[str]] = None, labels: Optional[List[str]] = None) -> pd.DataFrame:
         dataframe = pd.read_pickle(self.path)
-        return dataframe.df_get(names, labels)
+        return dataframe.sub_get(names, labels)
 
     def unsafe_push(self, dataframe: pd.DataFrame):
         new_dataframe = self.dataframe.copy()
-        new_dataframe.df_set(dataframe)
+        new_dataframe.sub_set(dataframe)
         new_dataframe = new_dataframe.astype(self.dtype)
         new_dataframe.to_pickle(self.path)
         return new_dataframe
